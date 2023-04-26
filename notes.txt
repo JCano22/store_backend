@@ -1,0 +1,22 @@
+# to run a script:
+py name.py
+
+#to check py version
+py --version
+
+# to create a virtual env
+py -m venv venv
+
+# to install plugin-package-module
+py -m pip install <NAME>
+py -m pip install virtualenv *to install virtual env*
+
+# to activate virtual env
+venv\Scripts\activate
+
+# to deactivate virtual env
+deactivate *type in cmd*
+
+# installs for the server
+py -m pip install pymongo flask flask_cors "pymongo[srv]" certifi
+
