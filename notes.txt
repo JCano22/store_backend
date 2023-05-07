@@ -20,3 +20,25 @@ deactivate *type in cmd*
 # installs for the server
 py -m pip install pymongo flask flask_cors "pymongo[srv]" certifi
 
+# to run Flask server
+flask --app  server.py --debug run
+
+
+
+##GIT 
+
+#init repo
+git init
+
+#setup the remove
+git remote add origint <URL>
+
+#create commits
+git add .
+git commit -m "descript"
+
+#push [first time]
+git push -u origin master (or main)
+
+#push [nth times]
+git push
