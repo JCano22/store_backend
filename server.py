@@ -1,8 +1,10 @@
 from flask import Flask, request, abort
 import json
 from config import db  # imports db variable from config.py
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app)  # disable CORS security rule
 
 
 @app.get("/")
@@ -164,5 +166,11 @@ def get_by_code(code):
         return abort(404, "Invalid Code")
 
     return json.dumps(fix_id(coupon))
+
+
+@app.delete("/api/coupons/<code>")
+def del_by_code(code):
+    coupon = db.coupons.delete_one({"code": code})
+    return json.dumps({"status": "OK", "message": "Coupon Deleted"})
 
 # app.run(debug=True)
