@@ -2,6 +2,7 @@ from flask import Flask, request, abort
 import json
 from config import db  # imports db variable from config.py
 from flask_cors import CORS
+from bson import ObjectId
 
 app = Flask(__name__)
 CORS(app)  # disable CORS security rule
@@ -45,9 +46,37 @@ def get_catalog():
 @app.post("/api/catalog")
 def save_product():
     data = request.get_json()
+
+    # apply validation
+
+    if "title" not in data or len(data["title"] < 6):
+        return abort(400, "Invalid Title")
+
+    if "price" not in data:
+        return abort(400, "Invalid Price")
+
+    if not isinstance(data["price"], (int, float)):
+        return abort(400, "Invalid Price")
+
+    if data["price"] <= 0:
+        return abort(400, "Invalid Price")
+
+    # BR3: there must be a catalog
+    if "catalog" not in data:
+        return abort(400, "Invalid Category")
+
     db.products.insert_one(data)
-    print(data)
     return json.dumps(fix_id(data))
+
+
+@app.get("/api/catalog/byid/<id>")
+def get_product_by_id(id):
+    db_id = ObjectId(id)
+    prod = db.products.find({"_id": db_id})
+    if prod is None:
+        return abort(404, "Product Not Found.")
+
+    return json.dumps(fix_id(prod))
 
 
 # get request on /api/total
@@ -136,6 +165,19 @@ def price_greater(value):
     return json.dumps(results)
 
 
+@app.delete("/api/catalog/<title>")
+def del_by_prod(title):
+    db.products.delete_one({"title": title})
+    return json.dumps({"status": "OK", "message": "Product Deleted"})
+
+
+@app.delete("/api/catalog/byid/<id>")
+def delete_by_id(id):
+    db_id = ObjectId(id)
+    db.products.delete_one({"_id": db_id})
+    return json.dumps({"status": "OK", "message": "Product Deleted"})
+
+
 #################################
 ######### COUPON CODE###########
 
@@ -155,6 +197,22 @@ def get_coupon():
 @app.post("/api/coupons")
 def save_coupons():
     data = request.get_json()
+    if "code" not in data or len(data["code"]) < 5:
+        return abort(400, "Invalid Coupon")
+
+    if "discount" not in data:
+        return abort(400, "Invalid Coupon")
+
+    if not isinstance(data["discount"], (int, float)):
+        return abort(400, "Invalid Discount")
+
+    if data["discount"] < 5 or data["discount"] > 40:
+        return abort(400, "Invalid Discount")
+
+    existing = db.coupons.find_one({"code": data["code"]})
+    if existing:
+        return abort(404, "Code already exists in coupon list.")
+
     db.coupons.insert_one(data)
     return json.dumps(fix_id(data))
 
@@ -172,5 +230,6 @@ def get_by_code(code):
 def del_by_code(code):
     coupon = db.coupons.delete_one({"code": code})
     return json.dumps({"status": "OK", "message": "Coupon Deleted"})
+
 
 # app.run(debug=True)
