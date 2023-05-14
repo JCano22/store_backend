@@ -49,7 +49,7 @@ def save_product():
 
     # apply validation
 
-    if "title" not in data or len(data["title"] < 6):
+    if "title" not in data or len(data["title"]) < 6:
         return abort(400, "Invalid Title")
 
     if "price" not in data:
